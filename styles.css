@@ -253,6 +253,18 @@ p {
   text-wrap: balance;
 }
 
+.question-context,
+.question-emphasis {
+  display: block;
+}
+
+.question-emphasis {
+  margin-top: 14px;
+  font-size: clamp(36px, 5vw, 54px);
+  font-weight: 880;
+  line-height: 1.08;
+}
+
 .options {
   display: grid;
   gap: 10px;
@@ -343,7 +355,7 @@ p {
 .result-card h1 {
   max-width: 760px;
   color: #101814;
-  font-size: clamp(46px, 6vw, 72px);
+  font-size: clamp(54px, 7vw, 82px);
   font-weight: 860;
   line-height: 1;
   letter-spacing: 0;
@@ -351,9 +363,9 @@ p {
 }
 
 .result-player-code {
-  margin-top: 9px;
+  margin-top: 8px;
   color: var(--player-color);
-  font-size: clamp(31px, 3.8vw, 42px);
+  font-size: clamp(46px, 5.7vw, 68px);
   font-weight: 850;
   line-height: 1;
 }
@@ -364,8 +376,8 @@ p {
 }
 
 .result-portrait {
-  width: clamp(190px, 28vw, 250px);
-  margin-top: 15px;
+  width: clamp(250px, 34vw, 320px);
+  margin-top: 18px;
 }
 
 .image-placeholder {
@@ -392,12 +404,14 @@ p {
 }
 
 .result-slogan {
-  max-width: 620px;
-  margin-top: 16px;
+  width: 100%;
+  max-width: 780px;
+  margin-top: 18px;
   color: #52625a;
-  font-size: clamp(15px, 1.8vw, 20px);
+  font-size: 22px;
   font-weight: 700;
-  line-height: 1.5;
+  line-height: 1.35;
+  white-space: nowrap;
 }
 
 .result-explanation {
@@ -531,7 +545,17 @@ p {
 }
 
 .result-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-top: 22px;
+}
+
+.result-actions button {
+  width: 100%;
+}
+
+#saveBtn {
+  box-shadow: 0 12px 28px rgba(7, 84, 61, 0.24);
 }
 
 @media (max-width: 760px) {
@@ -588,6 +612,11 @@ p {
     font-size: 23px;
   }
 
+  .question-emphasis {
+    margin-top: 12px;
+    font-size: clamp(36px, 10vw, 46px);
+  }
+
   .answer-mode-switch {
     align-items: stretch;
     justify-content: space-between;
@@ -637,26 +666,27 @@ p {
   }
 
   .result-card {
-    padding: 4px 6px 20px;
+    padding: 4px 4px 22px;
   }
 
   .result-card h1 {
-    font-size: clamp(38px, 11vw, 50px);
+    font-size: clamp(50px, 14vw, 60px);
   }
 
   .result-player-code {
-    font-size: 33px;
+    margin-top: 6px;
+    font-size: clamp(44px, 12vw, 52px);
   }
 
   .result-portrait {
-    width: min(190px, 58vw);
-    margin-top: 12px;
+    width: min(300px, 75vw);
+    margin-top: 15px;
   }
 
   .result-slogan {
-    max-width: 310px;
-    margin-top: 13px;
-    font-size: 15px;
+    max-width: 100%;
+    margin-top: 16px;
+    font-size: 20px;
   }
 
   .result-explanation {
@@ -699,12 +729,14 @@ p {
   }
 
   .result-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
   }
 
   .result-actions button {
     width: 100%;
-    padding: 0 12px;
+    min-height: 48px;
+    padding: 0 7px;
+    font-size: 14px;
   }
 }

@@ -4,6 +4,8 @@ const app = {
   answers: {},
   lastResultText: "",
   isAdvancing: false,
+  randomResultIndex: null,
+  currentResult: null,
 };
 
 const screens = {
@@ -17,13 +19,17 @@ const optionsEl = document.getElementById("options");
 const counterEl = document.getElementById("counter");
 const progressBar = document.getElementById("progressBar");
 const prevBtn = document.getElementById("prevBtn");
-const copyBtn = document.getElementById("copyBtn");
+const shareBtn = document.getElementById("shareBtn");
+const saveBtn = document.getElementById("saveBtn");
 const answerModeSwitch = document.getElementById("answerModeSwitch");
 const answerModeButtons = answerModeSwitch.querySelectorAll("[data-answer-mode]");
 
 const optionCodes = ["A", "B", "C", "D", "E"];
 const baseScores = { A: -100, B: -50, C: 0, D: 50, E: 100 };
 const dimensionTieBreakOrder = ["C", "T", "R", "E"];
+const PUBLIC_SITE_URL = "https://sjbti.xyz/";
+const RESULT_ASSET_VERSION = "20260623h";
+const preloadedResultImages = new Set();
 const RESULT_IMAGE_ALIASES = {
   隐身梅: "隐身者",
   跳水罗: "跳水者",
@@ -59,47 +65,47 @@ const PLAYER_PRESENTATION = {
 };
 const RESULT_PRESENTATION = {
   隐身者: {
-    slogan: "寻梅启事。",
+    slogan: "寻梅启事",
     description: "你习惯把自己藏进整体运转里，不抢戏，也不急着证明什么。场面越混乱，你越愿意用安静的方式寻找决定性一脚。",
   },
   绅士: {
-    slogan: "把比赛踢赢，也把体面留在场上。",
+    slogan: "把比赛踢赢，也把体面留在场上",
     description: "你重视规则、分寸和优雅的处理方式。即使竞争激烈，你也更愿意凭判断与技术解决问题，而不是让情绪接管比赛。",
   },
   红牌英雄: {
-    slogan: "个人可以下场，奖杯必须留下。",
+    slogan: "个人可以下场，奖杯必须留下",
     description: "你把团队目标放在自己之前。关键时刻敢于承担代价，也愿意做那个不一定光鲜、却真正改变结果的人。",
   },
   独裁者: {
-    slogan: "把球传给法兰西之剑。",
+    slogan: "把球传给法兰西之剑",
     description: "你相信顶级比赛需要明确的核心和强势的决定。你习惯掌控节奏，也希望最重要的选择最终由最有能力的人完成。",
   },
   老实人: {
-    slogan: "献出袖标。",
+    slogan: "献出袖标",
     description: "你可靠、谦逊，并且天然愿意为身边的人补位。你不执着于成为主角，但常常是团队最离不开的那个人。",
   },
   骑士: {
-    slogan: "骑士，向前。",
+    slogan: "骑士，向前",
     description: "你既有向前的勇气，也保留清晰的原则感。面对压力时，你更愿意正面解决问题，用行动赢得尊重。",
   },
   卧草者: {
-    slogan: "时间也是战术，领先就是艺术。",
+    slogan: "时间也是战术，领先就是艺术",
     description: "你擅长判断局势，并且知道什么时候应该降低风险。对你来说，控制时间与空间和创造机会同样重要。",
   },
   跳水者: {
-    slogan: "在禁区中上演水花消失术。",
+    slogan: "在禁区中上演水花消失术",
     description: "你对胜负极其敏感，也很懂得利用规则和场面。只要能创造优势，你不介意把每个细节都变成比赛的一部分。",
   },
   小鹿斑比: {
-    slogan: "脚步轻得像小鹿，防线却追不上你。",
+    slogan: "脚步轻得像小鹿，防线却追不上你",
     description: "你安静、灵巧，习惯用细腻触球和突然变向解决问题。外表温和不代表缺少锋芒，你更愿意让行动代替声量。",
   },
   魔人布欧: {
-    slogan: "不吃小孩的魔人布欧。",
+    slogan: "不吃小孩的魔人布欧",
     description: "你给人的第一印象可能强势甚至有压迫感，实际却友善、直接而讲道理。反差感是你最鲜明的个人魅力。",
   },
   黄牌大师: {
-    slogan: "把黄牌花在刀刃上。",
+    slogan: "把黄牌花在刀刃上",
     description: "你冷静、务实，懂得用最小代价阻止最坏结果。你并不迷恋冒险，但关键时刻从不回避必要的决定。",
   },
   挑衅者: {
@@ -107,31 +113,31 @@ const RESULT_PRESENTATION = {
     description: "你享受对抗、气氛和情绪拉扯。越是被质疑，你越容易被激活，并用更张扬的方式回应整个赛场。",
   },
   回传者: {
-    slogan: "过不去先回。",
+    slogan: "过不去先回",
     description: "你把稳定和控球权看得很重。与其冒险送出一次漂亮传球，你更愿意让团队重新组织，把失误概率降到最低。",
   },
   抽奖者: {
-    slogan: "传球像开盲盒，大奖只需要一次。",
+    slogan: "传球像开盲盒，大奖只需要一次",
     description: "你愿意不断尝试高难度选择。失败不会让你停止创造，因为你知道一次成功就可能直接改变比赛。",
   },
   吃饼者: {
-    slogan: "吃饼不忘做饼人。",
+    slogan: "吃饼不忘做饼人",
     description: "你对机会有敏锐嗅觉，行动直接而高效。复杂过程不是你的重点，把优势转化为结果才是你的价值。",
   },
   舞者: {
-    slogan: "过人不是路线，是舞步。",
+    slogan: "过人不是路线，是舞步",
     description: "你追求自由、灵感和表达感。对你来说，完成任务固然重要，但用漂亮且独特的方式完成更让人着迷。",
   },
   "“我的”人": {
-    slogan: "我的，兄弟，这球我的。",
+    slogan: "我的，兄弟，这球我的",
     description: "你有很强的责任感，不习惯把问题推给别人。即使犯错，你也会迅速承认并重新投入下一次行动。",
   },
   保镖: {
-    slogan: "保护我方输出。",
+    slogan: "保护我方输出",
     description: "你忠诚、强硬，也很清楚自己要保护什么。你愿意站在聚光灯之外，为重要的人和团队守住边界。",
   },
   亚洲式球王: {
-    slogan: "高光可以很大，庆祝不必太响。",
+    slogan: "高光可以很大，庆祝不必太响",
     description: "你能力出众，却不喜欢过度张扬。比起制造声势，你更相信持续表现与克制的自信。",
   },
   皇毛: {
@@ -139,75 +145,75 @@ const RESULT_PRESENTATION = {
     description: "你年轻、自信，也乐于把争议变成舞台。外界越想定义你，你越希望用自己的方式完成加冕。",
   },
   苟分者: {
-    slogan: "不冒险，也能把胜利攥到终场。",
+    slogan: "不冒险，也能把胜利攥到终场",
     description: "你擅长控制节奏、减少变量，并把优势稳稳保存下来。看似保守的选择背后，是对局势精准的计算。",
   },
   场上教练: {
-    slogan: "你不仅在踢球，也在替所有人排兵布阵。",
+    slogan: "你不仅在踢球，也在替所有人排兵布阵",
     description: "你习惯观察全局、提醒站位并指挥下一步行动。比起等待场边给出答案，你更愿意在比赛运行中直接整理秩序。",
   },
   带派者: {
-    slogan: "长相东北雨，过人不讲理。",
+    slogan: "长相东北雨，过人不讲理",
     description: "你冷静、有风格，不需要太多动作就能形成存在感。越是关键的场面，你越愿意用从容回应压力。",
   },
   摊手者: {
-    slogan: "没别的意思，单纯爱摊手。",
+    slogan: "没别的意思，单纯爱摊手",
     description: "你对比赛有高要求，也很容易看见系统中的问题。表达不满是你的本能，但真正驱动你的仍是强烈的求胜欲。",
   },
   游戏王: {
-    slogan: "梅罗时代游戏王。",
+    slogan: "梅罗时代游戏王",
     description: "你的竞技欲并不局限于草坪。只要有操作、博弈和胜负，你总能迅速进入自己的主场。",
   },
   哈基米: {
-    slogan: "哈基米南北绿豆。",
+    slogan: "哈基米南北绿豆",
     description: "送你一只哈基米，摩洛哥后卫阿什拉夫·哈基米。",
   },
   串子: {
-    slogan: "里奥·C·罗。",
+    slogan: "里奥·C·罗",
     description: "你擅长观察情绪、制造反应，并从混乱中获得乐趣。别人忙着站队时，你已经开始导演下一回合。",
   },
   乐子人: {
-    slogan: "轻松绷住。",
+    slogan: "轻松绷住",
     description: "你对足球的兴趣首先来自故事、争论和意外。比赛只是舞台，真正吸引你的是源源不断的戏剧性。",
   },
   隐身梅: {
-    slogan: "寻梅启事。",
+    slogan: "寻梅启事",
     description: "你擅长在安静与决定性之间切换。存在感未必持续在线，但每一次出现都足以引发新的争论。",
   },
   数据罗: {
-    slogan: "数字不会沉默，纪录就是扩音器。",
+    slogan: "数字不会沉默，纪录就是扩音器",
     description: "你相信持续输出能回答绝大多数质疑。目标清晰、行动直接，结果就是你最有力的表达。",
   },
   跳水罗: {
-    slogan: "在禁区中上演水花消失术。",
+    slogan: "在禁区中上演水花消失术",
     description: "你对机会极度敏锐，也从不浪费规则给予的空间。争议无法阻止你继续追求结果。",
   },
   受气梅: {
-    slogan: "给你俩窝窝。",
+    slogan: "给你俩窝窝",
     description: "你习惯用表现而不是争辩回应外界。克制让你偶尔显得沉默，却也让你的行动更有分量。",
   },
   詹姆斯: {
-    slogan: "每一次选择，都要成为新的素材。",
+    slogan: "每一次选择，都要成为新的素材",
     description: "你兼具团队意识与强烈的话题感。无论场上场下，你总能让普通瞬间获得额外关注。",
   },
   浪射罗: {
-    slogan: "不试一脚，怎么知道会不会进。",
+    slogan: "不试一脚，怎么知道会不会进",
     description: "你相信机会来自持续尝试。即使成功率并不完美，你也不会放弃下一次直接改变比分的可能。",
   },
   散步梅: {
-    slogan: "溜达溜达就下班了。",
+    slogan: "溜达溜达就下班了",
     description: "你不愿把能量浪费在无效动作上。安静观察、精准判断，然后在真正重要的时刻参与比赛。",
   },
   摊手罗: {
-    slogan: "标准很高，所以不满总是写在脸上。",
+    slogan: "两手一摊，足坛老詹",
     description: "你对自己和队友都有强烈期待。情绪表达直接，但背后仍是对胜利近乎固执的渴望。",
   },
   越位罗: {
-    slogan: "裁判哨响，C罗抢跑。",
+    slogan: "裁判哨响，C罗抢跑",
     description: "你总在寻找防线身后的空间。冒险会带来越位，也会带来最直接、最致命的机会。",
   },
   勤笑公: {
-    slogan: "笑一个吧，这里测不出你的人格。",
+    slogan: "笑一个吧，这里测不出你的人格",
     description: "你的四个维度保持着罕见的均衡。你不会被单一倾向彻底定义，面对不同比赛和人群时，总能自然切换自己的处理方式。",
   },
 };
@@ -431,7 +437,14 @@ function renderQuestion() {
   const displayIndex = app.currentIndex + 1;
 
   renderAnswerModeSwitch(question);
-  questionTitle.textContent = question.text;
+  if (question.emphasis) {
+    questionTitle.innerHTML = `
+      <span class="question-context">${question.text}</span>
+      <span class="question-emphasis">${question.emphasis}</span>
+    `;
+  } else {
+    questionTitle.textContent = question.text;
+  }
   counterEl.textContent = `${displayIndex} / ${displayTotal}`;
   progressBar.style.width = `${Math.round((displayIndex / displayTotal) * 100)}%`;
 
@@ -452,11 +465,21 @@ function renderQuestion() {
       if (app.isAdvancing) return;
       app.isAdvancing = true;
       app.answers[question.id] = button.dataset.value;
+      if (question.id === FBTI_DATA.answerModeQuestion.id && button.dataset.value === "random") {
+        app.randomResultIndex = Math.floor(Math.random() * FBTI_DATA.results.length);
+      }
       optionsEl.querySelectorAll(".option-btn").forEach((optionButton) => {
         optionButton.disabled = true;
         optionButton.classList.toggle("is-selected", optionButton === button);
       });
-      window.setTimeout(goNext, 180);
+      if (question.id === FBTI_DATA.answerModeQuestion.id && button.dataset.value === "random") {
+        window.setTimeout(renderResult, 180);
+        return;
+      }
+      window.setTimeout(() => {
+        preloadLikelyResultImage();
+        goNext();
+      }, 180);
     });
   });
 
@@ -489,6 +512,8 @@ function startTest() {
   app.answers = {};
   app.lastResultText = "";
   app.isAdvancing = false;
+  app.randomResultIndex = null;
+  app.currentResult = null;
   showScreen("test");
   renderQuestion();
 }
@@ -603,6 +628,24 @@ function getFinalResult() {
   const normalResult =
     FBTI_DATA.results.find((result) => result.key === resultKey) || FBTI_DATA.results[0];
 
+  if (app.answers.answerMode === "random" && app.randomResultIndex !== null) {
+    const randomResult = FBTI_DATA.results[app.randomResultIndex] || FBTI_DATA.results[0];
+    return {
+      type: "random",
+      introState,
+      scoreRows,
+      axes,
+      resultKey: randomResult.key,
+      normalResult: randomResult,
+      final: {
+        label: randomResult.label,
+        player: randomResult.player,
+        kind: "随机人格",
+      },
+      reason: "",
+    };
+  }
+
   const directHidden = getHiddenOverride(introState);
   if (directHidden) {
     return {
@@ -675,7 +718,7 @@ function resultImageBasePath(result) {
 
 function loadResultImage(final, imagePlaceholder, resultImage) {
   const basePath = resultImageBasePath(final);
-  const extensions = ["png", "jpg", "jpeg"];
+  const extensions = ["webp", "png", "jpg", "jpeg"];
   let extensionIndex = 0;
 
   imagePlaceholder.classList.remove("has-image");
@@ -687,7 +730,7 @@ function loadResultImage(final, imagePlaceholder, resultImage) {
       resultImage.onerror = null;
       return;
     }
-    resultImage.src = `${basePath}.${extensions[extensionIndex]}`;
+    resultImage.src = `${basePath}.${extensions[extensionIndex]}?v=${RESULT_ASSET_VERSION}`;
     extensionIndex += 1;
   };
 
@@ -696,6 +739,23 @@ function loadResultImage(final, imagePlaceholder, resultImage) {
   };
   resultImage.onerror = tryNextExtension;
   tryNextExtension();
+}
+
+function preloadLikelyResultImage() {
+  const answeredFormalQuestions = Object.keys(app.answers).filter((answerId) =>
+    [...FBTI_DATA.questionBanks.fan, ...FBTI_DATA.questionBanks.novice].some(
+      (question) => question.id === answerId,
+    ),
+  ).length;
+  if (answeredFormalQuestions < 12 || preloadedResultImages.size >= 3) return;
+
+  const final = getFinalResult().final;
+  const url = `${resultImageBasePath(final)}.webp?v=${RESULT_ASSET_VERSION}`;
+  if (preloadedResultImages.has(url) || typeof Image === "undefined") return;
+
+  preloadedResultImages.add(url);
+  const image = new Image();
+  image.src = url;
 }
 
 function renderDimensionBars(scoreRows) {
@@ -738,6 +798,15 @@ function getResultPresentation(result) {
   };
 }
 
+function fitSingleLineText(element, maxSize = 22, minSize = 12) {
+  element.style.fontSize = `${maxSize}px`;
+  let size = maxSize;
+  while (size > minSize && element.scrollWidth > element.clientWidth) {
+    size -= 1;
+    element.style.fontSize = `${size}px`;
+  }
+}
+
 function renderResult() {
   const result = getFinalResult();
   const final = result.final;
@@ -766,16 +835,199 @@ function renderResult() {
 
   const playerText = hasPlayer ? ` / ${final.player}` : "";
   app.lastResultText = `我的 FBTI 足球人格：${final.label}${playerText}。${presentation.slogan} ${presentation.description}`;
-  copyBtn.textContent = "复制结果";
+  app.currentResult = {
+    result,
+    presentation,
+    playerCode: hasPlayer ? playerPresentation?.code || final.player : "",
+    playerColor: playerPresentation?.color || "#07543d",
+  };
+  shareBtn.textContent = "分享网址";
+  saveBtn.textContent = "保存结果";
   showScreen("result");
+  window.setTimeout(() => fitSingleLineText(document.getElementById("resultSlogan")), 0);
 }
 
-async function copyResult() {
+async function copyText(text) {
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+
+  const textArea = document.createElement("textarea");
+  textArea.value = text;
+  textArea.style.position = "fixed";
+  textArea.style.opacity = "0";
+  document.body.appendChild(textArea);
+  textArea.select();
+  document.execCommand("copy");
+  textArea.remove();
+}
+
+async function shareSiteUrl() {
   try {
-    await navigator.clipboard.writeText(app.lastResultText);
-    copyBtn.textContent = "已复制";
+    await copyText(PUBLIC_SITE_URL);
+    shareBtn.textContent = "网址已复制";
   } catch (error) {
-    copyBtn.textContent = "复制失败";
+    shareBtn.textContent = "复制失败";
+  }
+  window.setTimeout(() => {
+    shareBtn.textContent = "分享网址";
+  }, 1800);
+}
+
+function roundedRectPath(context, x, y, width, height, radius) {
+  const safeRadius = Math.min(radius, width / 2, height / 2);
+  context.beginPath();
+  context.moveTo(x + safeRadius, y);
+  context.arcTo(x + width, y, x + width, y + height, safeRadius);
+  context.arcTo(x + width, y + height, x, y + height, safeRadius);
+  context.arcTo(x, y + height, x, y, safeRadius);
+  context.arcTo(x, y, x + width, y, safeRadius);
+  context.closePath();
+}
+
+function drawCoverImage(context, image, x, y, width, height) {
+  const sourceRatio = image.naturalWidth / image.naturalHeight;
+  const targetRatio = width / height;
+  let sourceX = 0;
+  let sourceY = 0;
+  let sourceWidth = image.naturalWidth;
+  let sourceHeight = image.naturalHeight;
+
+  if (sourceRatio > targetRatio) {
+    sourceWidth = sourceHeight * targetRatio;
+    sourceX = (image.naturalWidth - sourceWidth) / 2;
+  } else {
+    sourceHeight = sourceWidth / targetRatio;
+    sourceY = (image.naturalHeight - sourceHeight) / 2;
+  }
+
+  context.drawImage(
+    image,
+    sourceX,
+    sourceY,
+    sourceWidth,
+    sourceHeight,
+    x,
+    y,
+    width,
+    height,
+  );
+}
+
+function fitCanvasText(context, text, maxWidth, maxSize, minSize, weight = 800) {
+  let size = maxSize;
+  while (size > minSize) {
+    context.font = `${weight} ${size}px "Microsoft YaHei", "PingFang SC", sans-serif`;
+    if (context.measureText(text).width <= maxWidth) break;
+    size -= 2;
+  }
+  return size;
+}
+
+async function buildResultCardBlob() {
+  if (!app.currentResult) throw new Error("No result is available.");
+
+  const image = document.getElementById("resultImage");
+  if (!image.complete || !image.naturalWidth) {
+    await new Promise((resolve, reject) => {
+      image.addEventListener("load", resolve, { once: true });
+      image.addEventListener("error", reject, { once: true });
+    });
+  }
+
+  const { result, presentation, playerCode, playerColor } = app.currentResult;
+  const canvas = document.createElement("canvas");
+  canvas.width = 1080;
+  canvas.height = 1600;
+  const context = canvas.getContext("2d");
+
+  context.fillStyle = "#f2f4ef";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = "#ffffff";
+  roundedRectPath(context, 54, 54, 972, 1492, 28);
+  context.fill();
+
+  context.textAlign = "center";
+  context.textBaseline = "middle";
+
+  const name = result.final.label;
+  const nameSize = fitCanvasText(context, name, 860, 116, 72, 900);
+  context.fillStyle = "#101814";
+  context.font = `900 ${nameSize}px "Microsoft YaHei", "PingFang SC", sans-serif`;
+  context.fillText(name, 540, 160);
+
+  if (playerCode) {
+    const codeSize = fitCanvasText(context, playerCode, 760, 92, 62, 850);
+    context.fillStyle = playerColor;
+    context.font = `850 ${codeSize}px Inter, "Segoe UI", sans-serif`;
+    context.fillText(playerCode, 540, 258);
+  }
+
+  const imageY = playerCode ? 330 : 270;
+  const imageWidth = 720;
+  const imageHeight = 960;
+  context.save();
+  roundedRectPath(context, 180, imageY, imageWidth, imageHeight, 12);
+  context.clip();
+  drawCoverImage(context, image, 180, imageY, imageWidth, imageHeight);
+  context.restore();
+
+  const sloganSize = fitCanvasText(context, presentation.slogan, 860, 43, 25, 750);
+  context.fillStyle = "#52625a";
+  context.font = `750 ${sloganSize}px "Microsoft YaHei", "PingFang SC", sans-serif`;
+  context.fillText(presentation.slogan, 540, 1350);
+
+  context.strokeStyle = "#dce2dc";
+  context.lineWidth = 2;
+  context.beginPath();
+  context.moveTo(130, 1430);
+  context.lineTo(950, 1430);
+  context.stroke();
+
+  context.fillStyle = "#07543d";
+  context.font = `850 44px Inter, "Segoe UI", sans-serif`;
+  context.fillText("sjbti.xyz", 540, 1490);
+
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob);
+      else reject(new Error("Unable to generate result image."));
+    }, "image/png");
+  });
+}
+
+async function saveResultCard() {
+  saveBtn.disabled = true;
+  saveBtn.textContent = "正在生成…";
+  try {
+    const blob = await buildResultCardBlob();
+    const filename = `世界杯人格-${app.currentResult.result.final.label}.png`;
+    const file = new File([blob], filename, { type: "image/png" });
+
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: "我的世界杯人格",
+      });
+      saveBtn.textContent = "已生成";
+    } else {
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+      saveBtn.textContent = "已保存";
+    }
+  } catch (error) {
+    if (error?.name !== "AbortError") saveBtn.textContent = "保存失败";
+  } finally {
+    saveBtn.disabled = false;
+    window.setTimeout(() => {
+      saveBtn.textContent = "保存结果";
+    }, 1800);
   }
 }
 
@@ -783,10 +1035,16 @@ document.getElementById("startBtn").addEventListener("click", startTest);
 document.getElementById("restartBtn").addEventListener("click", startTest);
 document.getElementById("restartMiniBtn").addEventListener("click", startTest);
 document.getElementById("prevBtn").addEventListener("click", goPrev);
-document.getElementById("copyBtn").addEventListener("click", copyResult);
+shareBtn.addEventListener("click", shareSiteUrl);
+saveBtn.addEventListener("click", saveResultCard);
 answerModeButtons.forEach((button) => {
   button.addEventListener("click", () => {
     app.answers.answerMode = button.dataset.answerMode;
     renderQuestion();
   });
+});
+window.addEventListener?.("resize", () => {
+  if (screens.result.classList.contains("is-active")) {
+    fitSingleLineText(document.getElementById("resultSlogan"));
+  }
 });

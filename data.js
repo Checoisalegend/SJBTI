@@ -42,7 +42,8 @@ const FBTI_DATA = (() => {
     gate: {
       id: "gate",
       group: "开场分流",
-      text: "当你的球迷朋友得知你准备成为一名球迷，他们问你的第一个问题往往不是“你支持哪支球队？”，而是“梅西还是C罗？”：",
+      text: "当你的球迷朋友得知你准备成为一名球迷，你被问到的第一个问题往往不是“你支持哪支球队？”，而是：",
+      emphasis: "梅西还是C罗？",
       options: [
         { code: "A", value: "both", label: "很难选择，都是球王" },
         { code: "B", value: "messi", label: "梅西" },
@@ -152,6 +153,11 @@ const FBTI_DATA = (() => {
         code: "B",
         value: "quick",
         label: "懒得看这么多字，后面的题做3个选项的粗略测试",
+      },
+      {
+        code: "C",
+        value: "random",
+        label: "算了我不想做了，随便给我个人格得了",
       },
     ],
   };
