@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FBTI 足球人格测试</title>
+    <meta
+      name="description"
+      content="测测你的足球人格，看看你最像哪一种球员。"
+    />
+    <meta name="theme-color" content="#f2f4ef" />
+    <meta name="robots" content="index, follow" />
+    <link rel="stylesheet" href="./styles.css?v=20260623g" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section id="screen-intro" class="screen is-active">
+        <div class="intro-minimal">
+          <h1 id="introTitle">测测你的足球人格</h1>
+          <button class="primary-btn intro-start-btn" id="startBtn">开始测试</button>
+        </div>
+      </section>
+
+      <section id="screen-test" class="screen">
+        <div class="test-card">
+          <div class="question-progress">
+            <div class="counter" id="counter">1 / 1</div>
+            <div class="progress-track">
+              <span id="progressBar"></span>
+            </div>
+          </div>
+          <div class="answer-mode-switch" id="answerModeSwitch" hidden>
+            <span class="answer-mode-label">答题模式</span>
+            <div class="answer-mode-options" role="group" aria-label="答题选项数量">
+              <button type="button" data-answer-mode="quick">3项粗略</button>
+              <button type="button" data-answer-mode="precise">5项精准</button>
+            </div>
+          </div>
+          <h2 class="question-title" id="questionTitle">问题会显示在这里</h2>
+          <div class="options" id="options"></div>
+          <div class="test-actions">
+            <button class="ghost-btn" id="prevBtn">上一题</button>
+            <button class="secondary-btn" id="restartMiniBtn">重新开始</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="screen-result" class="screen">
+        <div class="result-shell">
+          <div class="result-card" id="resultCard">
+            <h1 id="resultName">人格标签</h1>
+            <p class="result-player-code" id="resultPlayerCode"></p>
+            <div class="result-portrait">
+              <div class="image-placeholder" id="imagePlaceholder">
+                <img id="resultImage" alt="" />
+              </div>
+            </div>
+            <p class="result-slogan" id="resultSlogan"></p>
+          </div>
+
+          <div class="result-explanation">
+            <div class="result-facts">
+              <p>你的人格类型是：<strong id="resultDetailName"></strong></p>
+              <p id="resultPlayerRow">
+                对应的球员是：<strong id="resultPlayerChinese"></strong>
+              </p>
+            </div>
+            <p class="result-description" id="resultDescription"></p>
+          </div>
+
+          <div class="dimension-results" id="dimensionBars"></div>
+
+          <div class="result-actions">
+            <button class="secondary-btn" id="copyBtn">复制结果</button>
+            <button class="primary-btn" id="restartBtn">再测一次</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="./data.js?v=20260623c"></script>
+    <script src="./app.js?v=20260623g"></script>
+  </body>
+</html>
