@@ -42,13 +42,18 @@ globalThis.testResultImages = () => ({
 
 const result = context.testResultImages();
 
-if (result.messiJames.label !== "詹姆斯" || result.messiJames.imageKey !== "詹姆斯梅") {
+if (
+  result.messiJames.label !== "詹姆斯" ||
+  result.messiJames.imageKey !== "詹姆斯梅" ||
+  result.messiJames.presentationKey !== "詹姆斯梅"
+) {
   throw new Error(`Messi James mismatch: ${JSON.stringify(result.messiJames)}`);
 }
 
 if (
   result.ronaldoJames.label !== "詹姆斯" ||
-  result.ronaldoJames.imageKey !== "詹姆斯罗"
+  result.ronaldoJames.imageKey !== "詹姆斯罗" ||
+  result.ronaldoJames.presentationKey !== "詹姆斯罗"
 ) {
   throw new Error(`Ronaldo James mismatch: ${JSON.stringify(result.ronaldoJames)}`);
 }
