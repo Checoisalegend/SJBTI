@@ -1,4 +1,4 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 const vm = require("vm");
 
 const context = { console };
@@ -50,3 +50,4 @@ if (JSON.stringify(actual) !== JSON.stringify(expected)) {
 }
 
 console.log("All 24 result rows match the latest player classification table.");
+

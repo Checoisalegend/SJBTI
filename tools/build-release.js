@@ -3,9 +3,9 @@ const path = require("path");
 
 const root = path.resolve(__dirname, "..");
 const output = path.resolve(root, "dist");
-const requiredFiles = ["index.html", "styles.css", "data.js", "app.js", "_headers"];
-const imageSource = path.resolve(root, "assets", "personality-images");
-const imageOutput = path.resolve(output, "assets", "personality-images");
+const requiredFiles = ["index.html", "styles.css", "data.js", "copy.js", "app.js", "_headers"];
+const cardSource = path.resolve(root, "assets", "result-cards");
+const cardOutput = path.resolve(output, "assets", "result-cards");
 
 if (path.dirname(output) !== root || path.basename(output) !== "dist") {
   throw new Error(`Refusing to replace unexpected output path: ${output}`);
@@ -18,20 +18,20 @@ for (const file of requiredFiles) {
   }
 }
 
-if (!fs.existsSync(imageSource)) {
-  throw new Error("Personality image directory is missing.");
+if (!fs.existsSync(cardSource)) {
+  throw new Error("Result card directory is missing. Put the final WebP cards in assets/result-cards first.");
 }
 
 fs.rmSync(output, { recursive: true, force: true });
-fs.mkdirSync(imageOutput, { recursive: true });
+fs.mkdirSync(cardOutput, { recursive: true });
 
 for (const file of requiredFiles) {
   fs.copyFileSync(path.resolve(root, file), path.resolve(output, file));
 }
 
-for (const entry of fs.readdirSync(imageSource, { withFileTypes: true })) {
+for (const entry of fs.readdirSync(cardSource, { withFileTypes: true })) {
   if (!entry.isFile() || !/\.webp$/i.test(entry.name)) continue;
-  fs.copyFileSync(path.resolve(imageSource, entry.name), path.resolve(imageOutput, entry.name));
+  fs.copyFileSync(path.resolve(cardSource, entry.name), path.resolve(cardOutput, entry.name));
 }
 
 const releaseFiles = [];

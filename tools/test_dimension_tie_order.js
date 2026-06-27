@@ -1,4 +1,4 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 const vm = require("vm");
 
 const noop = () => {};
@@ -29,6 +29,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(
   `${fs.readFileSync("data.js", "utf8")}
+${fs.readFileSync("copy.js", "utf8")}
 ${fs.readFileSync("app.js", "utf8")}
 globalThis.sortTiedDimensions = () => {
   const rows = [
@@ -57,3 +58,4 @@ if (JSON.stringify(result.dominant) !== JSON.stringify(expected.slice(0, 2))) {
 }
 
 console.log(result);
+

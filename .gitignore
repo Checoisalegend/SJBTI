@@ -1,2 +1,13 @@
 tmp/
 dist/
+reference/
+review-assets/
+最终结果卡/
+assets/personality-images/
+tools/export_result_card_manifest.js
+tools/generate_result_cards.py
+tools/inspect_workbook.py
+tools/optimize_personality_images.py
+tools/update_descriptions_from_docx.py
+tools/__pycache__/
+*.pyc

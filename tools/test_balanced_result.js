@@ -1,4 +1,4 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 const vm = require("vm");
 
 const noop = () => {};
@@ -31,6 +31,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(
   `${fs.readFileSync("data.js", "utf8")}
+${fs.readFileSync("copy.js", "utf8")}
 ${fs.readFileSync("app.js", "utf8")}
 globalThis.testBalanced = (answerCode, hiddenAnswers = {}) => {
   app.answers = { gate: "both", offPitchLife: "play", answerMode: "precise", ...hiddenAnswers };
@@ -56,3 +57,4 @@ for (const answerCode of ["A", "B", "C", "D", "E"]) {
 }
 
 console.log("Equal four-dimension strengths trigger 勤笑公 / 莱奥.");
+

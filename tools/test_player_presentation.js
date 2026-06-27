@@ -1,4 +1,4 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 const vm = require("vm");
 
 const noop = () => {};
@@ -31,6 +31,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(
   `${fs.readFileSync("data.js", "utf8")}
+${fs.readFileSync("copy.js", "utf8")}
 ${fs.readFileSync("app.js", "utf8")}
 globalThis.inspectPlayers = () => {
   const players = new Set();
@@ -41,7 +42,7 @@ globalThis.inspectPlayers = () => {
   Object.values(FBTI_DATA.hiddenResults).forEach((result) => {
     if (result.player) players.add(result.player);
   });
-  return [...players].filter((player) => !PLAYER_PRESENTATION[player]);
+  return [...players].filter((player) => !SJBTI_COPY.players[player]);
 };`,
   context,
 );
@@ -52,3 +53,4 @@ if (missingPlayers.length) {
 }
 
 console.log("Player abbreviations and national colors cover every result player.");
+

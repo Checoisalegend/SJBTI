@@ -1,4 +1,4 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 const vm = require("vm");
 
 const noop = () => {};
@@ -29,6 +29,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(
   `${fs.readFileSync("data.js", "utf8")}
+${fs.readFileSync("copy.js", "utf8")}
 ${fs.readFileSync("app.js", "utf8")}
 globalThis.inspectFlow = (answers) => {
   app.answers = answers;
@@ -96,3 +97,4 @@ for (const scenario of scenarios) {
     total: result.total,
   });
 }
+

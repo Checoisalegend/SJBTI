@@ -1,4 +1,4 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 const vm = require("vm");
 
 const noop = () => {};
@@ -31,6 +31,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(
   `${fs.readFileSync("data.js", "utf8")}
+${fs.readFileSync("copy.js", "utf8")}
 ${fs.readFileSync("app.js", "utf8")}
 globalThis.inspectAnswerMode = (mode) => {
   app.answers = { gate: "both", answerMode: mode };
@@ -66,3 +67,4 @@ if (quick.strongLeft !== -100 || quick.neutral !== 0 || quick.strongRight !== 10
 }
 
 console.log({ precise, quick });
+

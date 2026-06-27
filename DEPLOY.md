@@ -1,22 +1,15 @@
-# FBTI 上线指南
+# SJBTI 上线指南
+
+这个网站是纯静态站，Cloudflare Pages 足够使用，不需要服务器、数据库或 Workers。
 
 ## 推荐方案：Cloudflare Pages + GitHub
 
-这个网站是纯静态网站，Cloudflare Pages 足够使用，不需要购买服务器、数据库或 Workers。
-
-### 1. 创建 GitHub 仓库
-
-1. 登录 GitHub，新建一个空仓库，例如 `fbti-football-test`。
-2. 将本项目提交并推送到仓库。
-3. 不要单独上传 `dist`，Cloudflare 会自动生成它。
-
-### 2. 连接 Cloudflare Pages
-
-1. 登录 Cloudflare 控制台。
-2. 进入 **Workers & Pages**。
-3. 选择 **Create application > Pages > Connect to Git**。
-4. 授权 GitHub，选择刚才创建的仓库。
-5. 构建设置填写：
+1. 在 GitHub 创建仓库，例如 `SJBTI`。
+2. 把本项目推送到仓库。
+3. 在 Cloudflare 控制台进入 **Workers & Pages**。
+4. 选择 **Create application > Pages > Connect to Git**。
+5. 授权并选择 GitHub 仓库。
+6. 构建设置填写：
 
 | 设置 | 内容 |
 | --- | --- |
@@ -24,29 +17,19 @@
 | Build command | `node tools/build-release.js` |
 | Build output directory | `dist` |
 
-6. 点击部署。完成后会获得类似 `项目名.pages.dev` 的公开网址。
+以后每次推送到 GitHub，Cloudflare 都会自动重新构建并发布。
 
-以后每次推送代码到 GitHub，Cloudflare 都会自动重新发布。
+## 临时方案：Direct Upload
 
-## 更快的临时方案：Direct Upload
-
-先在项目目录运行：
+在项目目录运行：
 
 ```powershell
 node tools/build-release.js
 ```
 
-然后在 Cloudflare Pages 选择 **Drag and drop your files**，上传 `dist` 文件夹。
+然后在 Cloudflare Pages 选择 **Direct Upload**，上传生成后的 `dist` 文件夹。
 
-注意：Cloudflare 的 Direct Upload 项目之后不能直接切换为 Git 集成。若准备长期更新网站，建议一开始就使用 GitHub 方案。
-
-也可以安装 Node.js 后使用 Wrangler：
-
-```powershell
-npx wrangler login
-npx wrangler pages project create
-npx wrangler pages deploy dist
-```
+注意：Direct Upload 项目后续不能直接切换成 Git 集成。准备长期维护的话，建议一开始就使用 GitHub 方案。
 
 ## 自定义域名
 
@@ -54,17 +37,18 @@ npx wrangler pages deploy dist
 
 1. 打开 Cloudflare Pages 项目。
 2. 进入 **Custom domains**。
-3. 选择 **Set up a custom domain**。
-4. 输入已购买的域名或子域名，例如 `fbti.example.com`。
+3. 点击 **Set up a custom domain**。
+4. 输入域名，例如 `sjbti.xyz`。
 5. 按页面提示完成 DNS 配置。
 
-在购买域名前，`pages.dev` 地址已经可以让任何人直接访问。
+如果域名在阿里云购买，最终仍建议把 DNS 托管交给 Cloudflare，或者至少按 Cloudflare 提示添加 CNAME/验证记录。
 
 ## 每次更新网站
 
-1. 修改代码或替换人格图片。
-2. 运行全部测试。
-3. 推送到 GitHub。
-4. 等待 Cloudflare 自动部署完成。
+1. 修改代码、题库、文案或图片。
+2. 如果替换了 `assets/result-cards/` 里的结果卡图片，保持 39 个 WebP 文件名完全一致，并把 `app.js` 顶部的 `RESULT_ASSET_VERSION` 改成新值。
+3. 运行全部测试。
+4. 运行 `node tools/build-release.js`。
+5. 推送到 GitHub，等待 Cloudflare 自动部署。
 
-人格图片仍需放在 `assets/personality-images/`，文件名与人格名称保持一致。
+上线包只需要 `dist`。原始 PNG、参考资料和审核档案都不会进入 `dist`。

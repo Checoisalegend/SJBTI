@@ -1,4 +1,4 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 const vm = require("vm");
 
 const noop = () => {};
@@ -32,6 +32,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(
   `${fs.readFileSync("data.js", "utf8")}
+${fs.readFileSync("copy.js", "utf8")}
 ${fs.readFileSync("app.js", "utf8")}
 globalThis.testRandomResult = (index) => {
   app.answers = { gate: "both", offPitchLife: "play", answerMode: "random" };
@@ -60,3 +61,4 @@ for (const index of [0, 8, 17, 23]) {
 }
 
 console.log("Random answer mode returns a standard personality directly.");
+

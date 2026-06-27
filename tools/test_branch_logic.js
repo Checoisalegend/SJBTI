@@ -1,4 +1,4 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 const vm = require("vm");
 
 const noop = () => {};
@@ -28,6 +28,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(
   `${fs.readFileSync("data.js", "utf8")}
+${fs.readFileSync("copy.js", "utf8")}
 ${fs.readFileSync("app.js", "utf8")}
 globalThis.testTrollSide = (trollSide) => {
   app.answers = { gate: "meme", memeDepth: "troll", trollSide };
@@ -62,3 +63,4 @@ for (const [code, [answer, segment, hidden]] of Object.entries(cases)) {
   }
   console.log(code, result);
 }
+

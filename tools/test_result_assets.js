@@ -1,4 +1,4 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
 
@@ -32,6 +32,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(
   `${fs.readFileSync("data.js", "utf8")}
+${fs.readFileSync("copy.js", "utf8")}
 ${fs.readFileSync("app.js", "utf8")}
 globalThis.resultFiles = () => {
   const finals = FBTI_DATA.results.map((result) => ({
@@ -42,18 +43,18 @@ globalThis.resultFiles = () => {
     if (result.extreme) finals.push(parseExtremeResult(result.extreme));
   });
   finals.push(...Object.values(FBTI_DATA.hiddenResults));
-  return finals.map((result) => resultImageBasePath(result).replace("./", ""));
+  return finals.map((result) => resultCardUrl(result).replace("./", "").replace(/\\?v=.*/, ""));
 };`,
   context,
 );
 
-const extensions = [".png", ".jpg", ".jpeg"];
 const missing = context
   .resultFiles()
-  .filter((basePath) => !extensions.some((extension) => fs.existsSync(`${basePath}${extension}`)));
+  .filter((filePath) => !fs.existsSync(filePath));
 
 if (missing.length) {
-  throw new Error(`Missing result image assets: ${[...new Set(missing)].join(", ")}`);
+  throw new Error(`Missing result card assets: ${[...new Set(missing)].join(", ")}`);
 }
 
-console.log("All standard and hidden result image assets exist.");
+console.log("All standard and hidden result card assets exist.");
+

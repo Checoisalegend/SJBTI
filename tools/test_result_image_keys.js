@@ -1,4 +1,4 @@
-const fs = require("fs");
+﻿const fs = require("fs");
 const vm = require("vm");
 
 const noop = () => {};
@@ -29,6 +29,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(
   `${fs.readFileSync("data.js", "utf8")}
+${fs.readFileSync("copy.js", "utf8")}
 ${fs.readFileSync("app.js", "utf8")}
 globalThis.testResultImages = () => ({
   messiJames: parseExtremeResult("梅西 詹姆斯"),
@@ -71,3 +72,4 @@ if (result.kante.label !== "老实人") {
 }
 
 console.log(result);
+

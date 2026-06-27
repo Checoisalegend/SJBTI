@@ -6,6 +6,10 @@ const app = {
   isAdvancing: false,
   randomResultIndex: null,
   currentResult: null,
+  descriptionFeedbackChoice: null,
+  descriptionChangeTimer: null,
+  descriptionFeedbackLocked: false,
+  descriptionFeedbackTimer: null,
 };
 
 const screens = {
@@ -21,310 +25,19 @@ const progressBar = document.getElementById("progressBar");
 const prevBtn = document.getElementById("prevBtn");
 const shareBtn = document.getElementById("shareBtn");
 const saveBtn = document.getElementById("saveBtn");
+const resultDescriptionEl = document.getElementById("resultDescription");
+const descriptionFeedback = document.getElementById("descriptionFeedback");
+const feedbackLikeBtn = document.getElementById("feedbackLikeBtn");
+const feedbackDislikeBtn = document.getElementById("feedbackDislikeBtn");
 const answerModeSwitch = document.getElementById("answerModeSwitch");
 const answerModeButtons = answerModeSwitch.querySelectorAll("[data-answer-mode]");
 
 const optionCodes = ["A", "B", "C", "D", "E"];
 const baseScores = { A: -100, B: -50, C: 0, D: 50, E: 100 };
 const dimensionTieBreakOrder = ["C", "T", "R", "E"];
-const PUBLIC_SITE_URL = "https://sjbti.xyz/";
-const RESULT_ASSET_VERSION = "20260623h";
-const preloadedResultImages = new Set();
-const RESULT_IMAGE_ALIASES = {
-  隐身梅: "隐身者",
-  跳水罗: "跳水者",
-};
-const PLAYER_PRESENTATION = {
-  梅西: { code: "LM10", color: "#5b9fc9" },
-  莫德里奇: { code: "LM10", color: "#c71f2d" },
-  巴尔韦德: { code: "FV15", color: "#55aee6" },
-  姆巴佩: { code: "KM10", color: "#213a70" },
-  c罗: { code: "CR7", color: "#b51f35" },
-  C罗: { code: "CR7", color: "#b51f35" },
-  坎特: { code: "NG13", color: "#213a70" },
-  贝林厄姆: { code: "JB10", color: "#22385e" },
-  大马丁: { code: "EM23", color: "#5b9fc9" },
-  穆西亚拉: { code: "JM10", color: "#1c1c1c" },
-  哈兰德: { code: "EH9", color: "#ba1b2d" },
-  卡塞米罗: { code: "CS5", color: "#178b43" },
-  维尼修斯: { code: "VJ7", color: "#178b43" },
-  赖斯: { code: "DR4", color: "#22385e" },
-  维尔茨: { code: "FW17", color: "#1c1c1c" },
-  内马尔: { code: "NJ10", color: "#178b43" },
-  哈利凯恩: { code: "HK9", color: "#22385e" },
-  德保罗: { code: "RP7", color: "#5b9fc9" },
-  孙兴慜: { code: "HM7", color: "#c91c30" },
-  亚马尔: { code: "LY19", color: "#aa151b" },
-  罗德里: { code: "RH16", color: "#aa151b" },
-  基米希: { code: "JK6", color: "#1c1c1c" },
-  奥利赛: { code: "MO11", color: "#213a70" },
-  B费: { code: "BF8", color: "#b51f35" },
-  登贝莱: { code: "OD7", color: "#213a70" },
-  阿什拉夫: { code: "AH2", color: "#b7192f" },
-  莱奥: { code: "RL10", color: "#b51f35" },
-};
-const RESULT_PRESENTATION = {
-  隐身者: {
-    slogan: "寻梅启事",
-    description: "全场 90 分钟查无此人，队友复盘都得暂停三遍确认队里还有你这号人。主打一个球场透明人，进攻不插上防守不回追，混满全场数据栏除了出场时间全是零，偶尔蒙到一脚解围，转头就能吹自己是隐形关键先生。",
-  },
-  绅士: {
-    slogan: "从不上头之人，尊重对手之人",
-    description: "你重视规则、分寸和优雅的处理方式。即使竞争激烈，你也更愿意凭判断与技术解决问题，而不是让情绪接管比赛。",
-  },
-  红牌英雄: {
-    slogan: "个人可以下场，奖杯必须留下",
-    description: "你把团队目标放在自己之前。关键时刻敢于承担代价，也愿意做那个不一定光鲜、却真正改变结果的人。",
-  },
-  独裁者: {
-    slogan: "把球传给法兰西之剑",
-    description: "你相信顶级比赛需要明确的核心和强势的决定。你习惯掌控节奏，也希望最重要的选择最终由最有能力的人完成。",
-  },
-  老实人: {
-    slogan: "献出袖标",
-    description: "你可靠、谦逊，并且天然愿意为身边的人补位。你不执着于成为主角，但常常是团队最离不开的那个人。",
-  },
-  骑士: {
-    slogan: "骑士，向前",
-    description: "你既有向前的勇气，也保留清晰的原则感。面对压力时，你更愿意正面解决问题，用行动赢得尊重。",
-  },
-  卧草者: {
-    slogan: "时间也是战术，领先就是艺术",
-    description: "你擅长判断局势，并且知道什么时候应该降低风险。对你来说，控制时间与空间和创造机会同样重要。",
-  },
-  跳水者: {
-    slogan: "擅长在禁区中上演水花消失术",
-    description: "你对胜负极其敏感，也很懂得利用规则和场面。只要能创造优势，你不介意把每个细节都变成比赛的一部分。",
-  },
-  小鹿斑比: {
-    slogan: "脚步轻得像小鹿，防线却追不上你",
-    description: "你安静、灵巧，习惯用细腻触球和突然变向解决问题。外表温和不代表缺少锋芒，你更愿意让行动代替声量。",
-  },
-  魔人布欧: {
-    slogan: "不吃小孩的魔人布欧",
-    description: "你给人的第一印象可能强势甚至有压迫感，实际却友善、直接而讲道理。反差感是你最鲜明的个人魅力。",
-  },
-  黄牌大师: {
-    slogan: "把黄牌花在刀刃上",
-    description: "你冷静、务实，懂得用最小代价阻止最坏结果。你并不迷恋冒险，但关键时刻从不回避必要的决定。",
-  },
-  挑衅者: {
-    slogan: "Stop Crying Your Heart Out",
-    description: "你享受对抗、气氛和情绪拉扯。越是被质疑，你越容易被激活，并用更张扬的方式回应整个赛场。",
-  },
-  回传者: {
-    slogan: "过不去，先回吧",
-    description: "你把稳定和控球权看得很重。与其冒险送出一次漂亮传球，你更愿意让团队重新组织，把失误概率降到最低。",
-  },
-  抽奖者: {
-    slogan: "传球像开盲盒，大奖只需要一次",
-    description: "你愿意不断尝试高难度选择。失败不会让你停止创造，因为你知道一次成功就可能直接改变比赛。",
-  },
-  吃饼者: {
-    slogan: "吃饼不忘做饼人",
-    description: "你对机会有敏锐嗅觉，行动直接而高效。复杂过程不是你的重点，把优势转化为结果才是你的价值。",
-  },
-  舞者: {
-    slogan: "过人不是路线，是舞步",
-    description: "你追求自由、灵感和表达感。对你来说，完成任务固然重要，但用漂亮且独特的方式完成更让人着迷。",
-  },
-  "“我的”人": {
-    slogan: "我的，兄弟，这球我的",
-    description: "你有很强的责任感，不习惯把问题推给别人。即使犯错，你也会迅速承认并重新投入下一次行动。",
-  },
-  保镖: {
-    slogan: "保护我方输出",
-    description: "你忠诚、强硬，也很清楚自己要保护什么。你愿意站在聚光灯之外，为重要的人和团队守住边界。",
-  },
-  亚洲式球王: {
-    slogan: "高光可以很大，庆祝不必太响",
-    description: "你能力出众，却不喜欢过度张扬。比起制造声势，你更相信持续表现与克制的自信。",
-  },
-  皇毛: {
-    slogan: "头上戴的是皇冠，还是黄毛？",
-    description: "你年轻、自信，也乐于把争议变成舞台。外界越想定义你，你越希望用自己的方式完成加冕。",
-  },
-  苟分者: {
-    slogan: "不冒险，也能把胜利攥到终场",
-    description: "你擅长控制节奏、减少变量，并把优势稳稳保存下来。看似保守的选择背后，是对局势精准的计算。",
-  },
-  场上教练: {
-    slogan: "你不仅在踢球，也在替所有人排兵布阵",
-    description: "你习惯观察全局、提醒站位并指挥下一步行动。比起等待场边给出答案，你更愿意在比赛运行中直接整理秩序。",
-  },
-  带派者: {
-    slogan: "长相东北雨，过人不讲理",
-    description: "你冷静、有风格，不需要太多动作就能形成存在感。越是关键的场面，你越愿意用从容回应压力。",
-  },
-  摊手者: {
-    slogan: "没别的意思，单纯爱摊手",
-    description: "你对比赛有高要求，也很容易看见系统中的问题。表达不满是你的本能，但真正驱动你的仍是强烈的求胜欲。",
-  },
-  游戏王: {
-    slogan: "梅罗时代游戏王",
-    description: "你的竞技欲并不局限于草坪。只要有操作、博弈和胜负，你总能迅速进入自己的主场。",
-  },
-  哈基米: {
-    slogan: "哈基米南北绿豆",
-    description: "听说你喜欢猫咪，所以送你一只哈基米，摩洛哥队长阿什拉夫·哈基米。",
-  },
-  串子: {
-    slogan: "有请双方辩手入场",
-    description: "你擅长观察情绪、制造反应，并从混乱中获得乐趣。别人忙着站队时，你已经开始导演下一回合。",
-  },
-  乐子人: {
-    slogan: "轻松绷住",
-    description: "你对足球的兴趣首先来自故事、争论和意外。比赛只是舞台，真正吸引你的是源源不断的戏剧性。",
-  },
-  隐身梅: {
-    slogan: "寻梅启事",
-    description: "你擅长在安静与决定性之间切换。存在感未必持续在线，但每一次出现都足以引发新的争论。",
-  },
-  数据罗: {
-    slogan: "数字不会沉默，纪录就是扩音器",
-    description: "你相信持续输出能回答绝大多数质疑。目标清晰、行动直接，结果就是你最有力的表达。",
-  },
-  跳水罗: {
-    slogan: "擅长在禁区中上演水花消失术",
-    description: "你对机会极度敏锐，也从不浪费规则给予的空间。争议无法阻止你继续追求结果。",
-  },
-  受气梅: {
-    slogan: "给你俩窝窝",
-    description: "你习惯用表现而不是争辩回应外界。克制让你偶尔显得沉默，却也让你的行动更有分量。",
-  },
-  詹姆斯: {
-    slogan: "每一次选择，都要成为新的素材",
-    description: "你兼具团队意识与强烈的话题感。无论场上场下，你总能让普通瞬间获得额外关注。",
-  },
-  詹姆斯梅: {
-    slogan: "球权在脚下，故事在身上",
-    description: "你把控场、节奏和话题感揉在一起。看似不急着冲刺，实际上每一次停顿都像在给比赛安排新的镜头。",
-  },
-  詹姆斯罗: {
-    slogan: "两手一摊，流量登场",
-    description: "你把胜负、表达和镜头感绑在一起。越是有人盯着你，你越要把每一次选择都踢成新的讨论素材。",
-  },
-  浪射罗: {
-    slogan: "这次的目标不是人墙，也不是观众，而是外星人",
-    description: "你相信机会来自持续尝试。即使成功率并不完美，你也不会放弃下一次直接改变比分的可能。",
-  },
-  散步梅: {
-    slogan: "队友会替你奔跑回防",
-    description: "你不愿把能量浪费在无效动作上。安静观察、精准判断，然后在真正重要的时刻参与比赛。",
-  },
-  摊手罗: {
-    slogan: "两手一摊，足坛老詹",
-    description: "你对自己和队友都有强烈期待。情绪表达直接，但背后仍是对胜利近乎固执的渴望。",
-  },
-  越位罗: {
-    slogan: "裁判哨响，C罗抢跑",
-    description: "你总在寻找防线身后的空间。冒险会带来越位，也会带来最直接、最致命的机会。",
-  },
-  勤笑公: {
-    slogan: "笑一个吧，这里测不出你的人格",
-    description: "你的四个维度保持着罕见的均衡。你不会被单一倾向彻底定义，面对不同比赛和人群时，总能自然切换自己的处理方式。",
-  },
-};
-
-const STANDARD_DESCRIPTION_VARIANTS = {
-  隐身者: {
-    novice: "你是那种不抢镜但很会藏一手的人，平时像没上线，关键时刻突然冒出来，别人还得夸一句原来你在啊。",
-    fan: "你这踢法主打球场隐身术，热区图像请假条。别人在拼命刷存在感，你在努力证明足球也支持后台运行。",
-  },
-  绅士: {
-    novice: "你讲规矩、懂分寸，连赢球都想赢得体面。嘴上不狠，心里有数，是那种让人不好意思骂太重的人。",
-    fan: "你像个把足球踢成社交礼仪课的人，铲球前恨不得先递名片。优雅是优雅，就是有时太像来参加茶话会。",
-  },
-  红牌英雄: {
-    novice: "你很愿意为了团队站出来，哪怕自己吃点亏也能接受。别人看见红牌，你看见的是责任感在发光。",
-    fan: "你属于那种看见单刀就开始计算牺牲价值的人。队友感谢你，裁判记住你，赛后集锦还得给你打马赛克。",
-  },
-  独裁者: {
-    novice: "你天生有主角感，做决定时很果断。大家犹豫的时候，你已经开始指挥方向，多少有点队长气质。",
-    fan: "你这人格一上来就想把战术板据为己有，传球路线最好都通向你。不是不能当核心，是你太怕别人也有想法。",
-  },
-  老实人: {
-    novice: "你靠谱、好说话，也愿意替别人多跑两步。看起来不张扬，但真到需要人的时候，大家第一个想到你。",
-    fan: "你是球场老黄牛型人格，脏活累活全包，还容易被夸一句人真好然后继续加班。袖标给你都像精神补偿。",
-  },
-  骑士: {
-    novice: "你有原则，也有行动力。遇到问题不会只在嘴上讲道理，而是愿意往前一步，把事情扛起来。",
-    fan: "你踢球像自带骑士宣言，热血是够热血，就是有时冲得像刚看完更衣室演讲，冷静键没完全装上。",
-  },
-  卧草者: {
-    novice: "你很懂得保护优势，不会为了好看乱冒险。别人觉得你慢，你其实是在认真管理比赛时间。",
-    fan: "领先后你就像草皮质检员，哪块地软你最清楚。说是战术成熟，也可以叫把比赛拖进养老频道。",
-  },
-  跳水者: {
-    novice: "你很会利用机会，也懂得让细节帮自己说话。只要规则允许，你就能把一点点空间变成优势。",
-    fan: "你对禁区的理解已经接近水上项目，风一吹就有剧情。VAR 看你都头疼，因为你把灰色地带当主场。",
-  },
-  小鹿斑比: {
-    novice: "你看起来温和，行动却很灵。你不靠嗓门制造存在感，而是靠细腻和轻快让人记住你。",
-    fan: "你外表人畜无害，过人时却像给防守人系鞋带。问题是太乖了，狠起来都像在礼貌地拆别人后防。",
-  },
-  魔人布欧: {
-    novice: "你第一眼很有压迫感，但熟了会发现其实挺可爱。外表强硬，内心柔软，这种反差很容易招人喜欢。",
-    fan: "你这人设像把中锋模板和睡衣派对缝在一起，撞人很吓人，笑起来又像刚被夸乖，反差大到离谱。",
-  },
-  黄牌大师: {
-    novice: "你冷静、实际，知道什么时候该果断处理问题。你不追求漂亮场面，只在关键时刻做有效选择。",
-    fan: "你对黄牌的使用像财务报销，精准、节制、刀刀有账。别人踢球靠激情，你踢球像在管理犯规预算。",
-  },
-  挑衅者: {
-    novice: "你很有表达欲，也不怕被关注。外界越热闹，你越容易被激活，像是天生适合大场面。",
-    fan: "你不是在踢球，你是在给评论区添柴。被嘘两句就开始充电，情绪价值拉满，防守人和观众都得陪你演。",
-  },
-  回传者: {
-    novice: "你稳重，不轻易乱来。与其冒险丢球，你更愿意让大家重新组织，看起来保守，其实很会照顾全局。",
-    fan: "你看到前场空当的第一反应是回给中卫，足球在你脚下像遇到撤回键。安全是安全，就是观众血压有点不安全。",
-  },
-  抽奖者: {
-    novice: "你喜欢尝试，也愿意接受失败。你知道只要成功一次，就可能让整个局面变得不一样。",
-    fan: "你传球像刮彩票，十脚九脚离谱，剩下一脚能上集锦。教练捂脸，前锋祈祷，观众倒是挺有节目看。",
-  },
-  吃饼者: {
-    novice: "你很会抓机会，知道自己该出现在哪里。别人铺垫半天，你负责把结果收下，这也是一种能力。",
-    fan: "你是禁区收件员，快递到了绝不拒收。别问参与感，问就是进球已经很累了，做饼这种事让别人卷去。",
-  },
-  舞者: {
-    novice: "你有灵感，也很会表达自己。你不满足于只是完成任务，更想用漂亮方式留下记忆点。",
-    fan: "你过人像开舞蹈房，能简单传偏要多转两圈。好看是真好看，队友有时也真想把你遥控器抢走。",
-  },
-  "“我的”人": {
-    novice: "你责任感很强，出了问题不太会逃避。能主动认账的人不多，所以你反而很容易让人放心。",
-    fan: "你属于赛后主动背锅型人格，球还没滚远就开始说我的。态度满分，就是别把全队事故都承包成个人品牌。",
-  },
-  保镖: {
-    novice: "你很忠诚，也很护短。只要你认定某个人或团队重要，你就愿意站出来替他们挡掉麻烦。",
-    fan: "你踢球像贴身安保，主角往哪走你往哪补。存在感不在数据栏，在对手被你挡到怀疑人生的表情里。",
-  },
-  亚洲式球王: {
-    novice: "你能力很强，但不喜欢太夸张地表现自己。低调、稳定、关键时刻靠谱，是很讨喜的类型。",
-    fan: "你强得很安静，庆祝都像怕打扰邻居。明明能当主角，却总把声量调低，搞得黑子想喷都没抓手。",
-  },
-  皇毛: {
-    novice: "你年轻、自信，也很敢展示自己。别人越关注你，你越容易拿出更亮眼的表现。",
-    fan: "你头发和话题度一起起飞，踢两脚就像在给未来十年预告片加滤镜。天赋是真天赋，包袱也是真不小。",
-  },
-  苟分者: {
-    novice: "你不贪心，懂得把优势稳稳拿住。你看起来谨慎，其实是在用最省力的方式守住结果。",
-    fan: "你是三分保鲜膜人格，一旦领先就开始给比赛抽真空。观赏性可以先死，积分必须活着。",
-  },
-  场上教练: {
-    novice: "你很会观察整体，也愿意提醒别人。你不只是参与比赛，还会自然地帮大家整理方向。",
-    fan: "你踢着踢着就开始兼职助教，手势比触球还忙。队友跑不明白你急，教练没喊你先喊，控制欲挺健康地超标。",
-  },
-  带派者: {
-    novice: "你有自己的节奏，不太需要大喊大叫。越到关键时刻，你越能保持一种很酷的从容感。",
-    fan: "你主打一个冷脸开工，像刚从片场直接来踢边路。动作不多但挺要命，就是气质有点像防守人欠你钱。",
-  },
-  摊手者: {
-    novice: "你标准很高，也很在乎结果。表达不满只是因为你真的想赢，情绪背后是很强的胜负心。",
-    fan: "你这双手摊得比传球路线还准，队友失误你先开庭。不是说你不强，就是你的肢体语言已经快拿助攻王了。",
-  },
-};
-
+const PUBLIC_SITE_URL = SJBTI_COPY.siteUrl;
+const RESULT_ASSET_VERSION = "20260627a";
+const preloadedResultCards = new Set();
 function showScreen(name) {
   Object.entries(screens).forEach(([key, screen]) => {
     screen.classList.toggle("is-active", key === name);
@@ -584,7 +297,7 @@ function renderQuestion() {
         return;
       }
       window.setTimeout(() => {
-        preloadLikelyResultImage();
+        preloadLikelyResultCard();
         goNext();
       }, 180);
     });
@@ -701,7 +414,7 @@ function parseExtremeResult(text) {
   return {
     player,
     label,
-    imageKey: jamesKey || RESULT_IMAGE_ALIASES[label] || label,
+    imageKey: jamesKey || SJBTI_COPY.imageAliases[label] || label,
     presentationKey: jamesKey || undefined,
   };
 }
@@ -814,50 +527,47 @@ function getFinalResult() {
   };
 }
 
-function resultImageBasePath(result) {
-  const imageName = result.imageKey || result.label;
-  const cleanName = imageName.replace(/[“”"']/g, "").replace(/[\\/:*?<>|]/g, "");
-  return `./assets/personality-images/${cleanName}`;
+function sanitizeAssetName(name) {
+  return String(name).replace(/[“”"']/g, "").replace(/[\\/:*?<>|]/g, "");
 }
 
-function loadResultImage(final, imagePlaceholder, resultImage) {
-  const basePath = resultImageBasePath(final);
-  const extensions = ["webp", "png", "jpg", "jpeg"];
-  let extensionIndex = 0;
-
-  imagePlaceholder.classList.remove("has-image");
-  resultImage.removeAttribute("src");
-  resultImage.alt = `${final.label}人格图`;
-
-  const tryNextExtension = () => {
-    if (extensionIndex >= extensions.length) {
-      resultImage.onerror = null;
-      return;
-    }
-    resultImage.src = `${basePath}.${extensions[extensionIndex]}?v=${RESULT_ASSET_VERSION}`;
-    extensionIndex += 1;
-  };
-
-  resultImage.onload = () => {
-    imagePlaceholder.classList.add("has-image");
-  };
-  resultImage.onerror = tryNextExtension;
-  tryNextExtension();
+function resultCardKey(result) {
+  return sanitizeAssetName(result.presentationKey || result.label);
 }
 
-function preloadLikelyResultImage() {
+function resultCardUrl(result) {
+  return `./assets/result-cards/${resultCardKey(result)}.webp?v=${RESULT_ASSET_VERSION}`;
+}
+
+function loadResultCard(final, cardPlaceholder, resultCardImage) {
+  const url = resultCardUrl(final);
+
+  cardPlaceholder.classList.remove("has-image");
+  resultCardImage.removeAttribute("src");
+  resultCardImage.alt = `${final.label}结果卡`;
+  resultCardImage.onload = () => {
+    cardPlaceholder.classList.add("has-image");
+  };
+  resultCardImage.onerror = () => {
+    cardPlaceholder.classList.remove("has-image");
+  };
+  resultCardImage.src = url;
+  return url;
+}
+
+function preloadLikelyResultCard() {
   const answeredFormalQuestions = Object.keys(app.answers).filter((answerId) =>
     [...FBTI_DATA.questionBanks.fan, ...FBTI_DATA.questionBanks.novice].some(
       (question) => question.id === answerId,
     ),
   ).length;
-  if (answeredFormalQuestions < 12 || preloadedResultImages.size >= 3) return;
+  if (answeredFormalQuestions < 12 || preloadedResultCards.size >= 3) return;
 
   const final = getFinalResult().final;
-  const url = `${resultImageBasePath(final)}.webp?v=${RESULT_ASSET_VERSION}`;
-  if (preloadedResultImages.has(url) || typeof Image === "undefined") return;
+  const url = resultCardUrl(final);
+  if (preloadedResultCards.has(url) || typeof Image === "undefined") return;
 
-  preloadedResultImages.add(url);
+  preloadedResultCards.add(url);
   const image = new Image();
   image.src = url;
 }
@@ -893,16 +603,41 @@ function renderDimensionBars(scoreRows) {
 
 function getResultPresentation(result) {
   const presentationKey = result.final.presentationKey || result.final.label;
-  const presentation = RESULT_PRESENTATION[presentationKey];
   const isStandardResult = result.type === "normal" || result.type === "random";
-  const standardDescriptions = STANDARD_DESCRIPTION_VARIANTS[result.final.label];
-  if (presentation && isStandardResult && standardDescriptions) {
+  const standardPresentation = SJBTI_COPY.standardResults[result.final.label];
+  if (isStandardResult && standardPresentation) {
     const segment = getTestingSegment(result.introState);
+    const descriptions = standardPresentation.descriptions;
     return {
-      ...presentation,
-      description: standardDescriptions[segment] || standardDescriptions.fan || presentation.description,
+      slogan: standardPresentation.slogan,
+      description: descriptions[segment] || descriptions.fan,
+      descriptions,
+      segment,
+      canToggleDescription: segment === "fan",
+      dislikeDescription: descriptions.novice,
     };
   }
+
+  const presentation =
+    SJBTI_COPY.specialResults[presentationKey] ||
+    SJBTI_COPY.specialResults[result.final.label] ||
+    standardPresentation;
+
+  if (result.type === "extreme" && presentation?.descriptions?.extreme) {
+    return {
+      ...presentation,
+      description: presentation.descriptions.extreme,
+      canToggleDescription: true,
+      dislikeDescription: presentation.descriptions.extremeSoft,
+      feedbackLabels: {
+        likeDefault: "这是高论",
+        likeSelected: "已赞，这是高论",
+        dislikeDefault: "这里没有尊重",
+        dislikeSelected: "已踩，换个说法",
+      },
+    };
+  }
+
   if (presentation) return presentation;
 
   const axisText = result.axes.map((axis) => axis.side).join("与");
@@ -912,53 +647,115 @@ function getResultPresentation(result) {
   };
 }
 
-function fitSingleLineText(element, maxSize = 22, minSize = 12) {
-  element.style.fontSize = `${maxSize}px`;
-  let size = maxSize;
-  while (size > minSize && element.scrollWidth > element.clientWidth) {
-    size -= 1;
-    element.style.fontSize = `${size}px`;
+const defaultDescriptionFeedbackLabels = {
+  likeDefault: "是的这就是我",
+  likeSelected: "已赞，这就是我",
+  dislikeDefault: "我不要面子？",
+  dislikeSelected: "已踩，换个说法",
+};
+
+function getDescriptionFeedbackLabels(presentation = {}) {
+  return {
+    ...defaultDescriptionFeedbackLabels,
+    ...(presentation.feedbackLabels || {}),
+  };
+}
+
+function setFeedbackButtonState(choice, presentation = {}) {
+  const labels = getDescriptionFeedbackLabels(presentation);
+  app.descriptionFeedbackChoice = choice;
+  feedbackLikeBtn.classList.toggle("is-selected", choice === "like");
+  feedbackDislikeBtn.classList.toggle("is-selected", choice === "dislike");
+  feedbackDislikeBtn.classList.add("is-negative");
+
+  feedbackLikeBtn.querySelector(".feedback-label").textContent =
+    choice === "like" ? labels.likeSelected : labels.likeDefault;
+  feedbackDislikeBtn.querySelector(".feedback-label").textContent =
+    choice === "dislike" ? labels.dislikeSelected : labels.dislikeDefault;
+}
+
+function lockDescriptionFeedback() {
+  app.descriptionFeedbackLocked = true;
+  feedbackLikeBtn.disabled = true;
+  feedbackDislikeBtn.disabled = true;
+}
+
+function dismissDescriptionFeedback(delay = 850) {
+  window.clearTimeout(app.descriptionFeedbackTimer);
+  app.descriptionFeedbackTimer = window.setTimeout(() => {
+    descriptionFeedback.classList.add("is-dismissing");
+    app.descriptionFeedbackTimer = window.setTimeout(() => {
+      descriptionFeedback.hidden = true;
+      descriptionFeedback.classList.remove("is-dismissing");
+    }, 210);
+  }, delay);
+}
+
+function setResultDescription(text, animate = false) {
+  window.clearTimeout(app.descriptionChangeTimer);
+  resultDescriptionEl.classList.remove("is-updated");
+
+  if (!animate) {
+    resultDescriptionEl.classList.remove("is-changing");
+    resultDescriptionEl.textContent = text;
+    return;
   }
+
+  resultDescriptionEl.classList.add("is-changing");
+  app.descriptionChangeTimer = window.setTimeout(() => {
+    resultDescriptionEl.textContent = text;
+    resultDescriptionEl.classList.remove("is-changing");
+    resultDescriptionEl.classList.add("is-updated");
+    app.descriptionChangeTimer = window.setTimeout(() => {
+      resultDescriptionEl.classList.remove("is-updated");
+    }, 620);
+  }, 150);
+}
+
+function setupDescriptionFeedback(presentation) {
+  const targetDescription = presentation.dislikeDescription || presentation.descriptions?.novice;
+  const canShow =
+    presentation.canToggleDescription &&
+    presentation.description &&
+    targetDescription;
+
+  descriptionFeedback.hidden = !canShow;
+  descriptionFeedback.classList.remove("is-dismissing");
+  feedbackLikeBtn.disabled = false;
+  feedbackDislikeBtn.disabled = false;
+  app.descriptionFeedbackLocked = false;
+  window.clearTimeout(app.descriptionFeedbackTimer);
+  setFeedbackButtonState(null, presentation);
 }
 
 function renderResult() {
   const result = getFinalResult();
   const final = result.final;
-  const imagePlaceholder = document.getElementById("imagePlaceholder");
-  const resultImage = document.getElementById("resultImage");
+  const cardPlaceholder = document.getElementById("cardPlaceholder");
+  const resultCardImage = document.getElementById("resultCardImage");
   const presentation = getResultPresentation(result);
-  const playerPresentation = PLAYER_PRESENTATION[final.player];
-  const resultPlayerCode = document.getElementById("resultPlayerCode");
   const resultPlayerRow = document.getElementById("resultPlayerRow");
   const hasPlayer = Boolean(final.player && final.player !== "待补球员");
 
-  document.getElementById("resultName").textContent = final.label;
   document.getElementById("resultDetailName").textContent = final.label;
   document.getElementById("resultPlayerChinese").textContent = hasPlayer ? final.player : "";
-  resultPlayerCode.textContent = hasPlayer ? playerPresentation?.code || final.player : "";
-  resultPlayerCode.hidden = !hasPlayer;
   resultPlayerRow.hidden = !hasPlayer;
-  document
-    .getElementById("resultCard")
-    .style.setProperty("--player-color", playerPresentation?.color || "var(--green)");
-  document.getElementById("resultSlogan").textContent = presentation.slogan;
-  document.getElementById("resultDescription").textContent = presentation.description;
+  setResultDescription(presentation.description);
+  setupDescriptionFeedback(presentation);
 
-  loadResultImage(final, imagePlaceholder, resultImage);
+  const cardUrl = loadResultCard(final, cardPlaceholder, resultCardImage);
   renderDimensionBars(result.scoreRows);
 
   const playerText = hasPlayer ? ` / ${final.player}` : "";
-  app.lastResultText = `我的 FBTI 足球人格：${final.label}${playerText}。${presentation.slogan} ${presentation.description}`;
+  app.lastResultText = `我的 SJBTI 世界杯人格：${final.label}${playerText}。${presentation.slogan} ${presentation.description}`;
   app.currentResult = {
     result,
     presentation,
-    playerCode: hasPlayer ? playerPresentation?.code || final.player : "",
-    playerColor: playerPresentation?.color || "#07543d",
+    cardUrl,
   };
   shareBtn.textContent = "分享网址";
   saveBtn.textContent = "保存结果";
   showScreen("result");
-  window.setTimeout(() => fitSingleLineText(document.getElementById("resultSlogan")), 0);
 }
 
 async function copyText(text) {
@@ -989,60 +786,10 @@ async function shareSiteUrl() {
   }, 1800);
 }
 
-function roundedRectPath(context, x, y, width, height, radius) {
-  const safeRadius = Math.min(radius, width / 2, height / 2);
-  context.beginPath();
-  context.moveTo(x + safeRadius, y);
-  context.arcTo(x + width, y, x + width, y + height, safeRadius);
-  context.arcTo(x + width, y + height, x, y + height, safeRadius);
-  context.arcTo(x, y + height, x, y, safeRadius);
-  context.arcTo(x, y, x + width, y, safeRadius);
-  context.closePath();
-}
-
-function drawCoverImage(context, image, x, y, width, height) {
-  const sourceRatio = image.naturalWidth / image.naturalHeight;
-  const targetRatio = width / height;
-  let sourceX = 0;
-  let sourceY = 0;
-  let sourceWidth = image.naturalWidth;
-  let sourceHeight = image.naturalHeight;
-
-  if (sourceRatio > targetRatio) {
-    sourceWidth = sourceHeight * targetRatio;
-    sourceX = (image.naturalWidth - sourceWidth) / 2;
-  } else {
-    sourceHeight = sourceWidth / targetRatio;
-    sourceY = (image.naturalHeight - sourceHeight) / 2;
-  }
-
-  context.drawImage(
-    image,
-    sourceX,
-    sourceY,
-    sourceWidth,
-    sourceHeight,
-    x,
-    y,
-    width,
-    height,
-  );
-}
-
-function fitCanvasText(context, text, maxWidth, maxSize, minSize, weight = 800) {
-  let size = maxSize;
-  while (size > minSize) {
-    context.font = `${weight} ${size}px "Microsoft YaHei", "PingFang SC", sans-serif`;
-    if (context.measureText(text).width <= maxWidth) break;
-    size -= 2;
-  }
-  return size;
-}
-
 async function buildResultCardBlob() {
   if (!app.currentResult) throw new Error("No result is available.");
 
-  const image = document.getElementById("resultImage");
+  const image = document.getElementById("resultCardImage");
   if (!image.complete || !image.naturalWidth) {
     await new Promise((resolve, reject) => {
       image.addEventListener("load", resolve, { once: true });
@@ -1050,58 +797,14 @@ async function buildResultCardBlob() {
     });
   }
 
-  const { result, presentation, playerCode, playerColor } = app.currentResult;
   const canvas = document.createElement("canvas");
-  canvas.width = 1080;
-  canvas.height = 1600;
+  canvas.width = image.naturalWidth;
+  canvas.height = image.naturalHeight;
   const context = canvas.getContext("2d");
 
-  context.fillStyle = "#f2f4ef";
-  context.fillRect(0, 0, canvas.width, canvas.height);
   context.fillStyle = "#ffffff";
-  roundedRectPath(context, 54, 54, 972, 1492, 28);
-  context.fill();
-
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-
-  const name = result.final.label;
-  const nameSize = fitCanvasText(context, name, 860, 116, 72, 900);
-  context.fillStyle = "#101814";
-  context.font = `900 ${nameSize}px "Microsoft YaHei", "PingFang SC", sans-serif`;
-  context.fillText(name, 540, 160);
-
-  if (playerCode) {
-    const codeSize = fitCanvasText(context, playerCode, 760, 92, 62, 850);
-    context.fillStyle = playerColor;
-    context.font = `850 ${codeSize}px Inter, "Segoe UI", sans-serif`;
-    context.fillText(playerCode, 540, 258);
-  }
-
-  const imageY = playerCode ? 330 : 270;
-  const imageWidth = 720;
-  const imageHeight = 960;
-  context.save();
-  roundedRectPath(context, 180, imageY, imageWidth, imageHeight, 12);
-  context.clip();
-  drawCoverImage(context, image, 180, imageY, imageWidth, imageHeight);
-  context.restore();
-
-  const sloganSize = fitCanvasText(context, presentation.slogan, 860, 43, 25, 750);
-  context.fillStyle = "#52625a";
-  context.font = `750 ${sloganSize}px "Microsoft YaHei", "PingFang SC", sans-serif`;
-  context.fillText(presentation.slogan, 540, 1350);
-
-  context.strokeStyle = "#dce2dc";
-  context.lineWidth = 2;
-  context.beginPath();
-  context.moveTo(130, 1430);
-  context.lineTo(950, 1430);
-  context.stroke();
-
-  context.fillStyle = "#07543d";
-  context.font = `850 44px Inter, "Segoe UI", sans-serif`;
-  context.fillText("sjbti.xyz", 540, 1490);
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(image, 0, 0);
 
   return new Promise((resolve, reject) => {
     canvas.toBlob((blob) => {
@@ -1151,14 +854,26 @@ document.getElementById("restartMiniBtn").addEventListener("click", startTest);
 document.getElementById("prevBtn").addEventListener("click", goPrev);
 shareBtn.addEventListener("click", shareSiteUrl);
 saveBtn.addEventListener("click", saveResultCard);
+feedbackLikeBtn.addEventListener("click", () => {
+  const presentation = app.currentResult?.presentation;
+  if (!presentation?.canToggleDescription || app.descriptionFeedbackLocked) return;
+  setFeedbackButtonState("like", presentation);
+  lockDescriptionFeedback();
+  dismissDescriptionFeedback();
+});
+feedbackDislikeBtn.addEventListener("click", () => {
+  const presentation = app.currentResult?.presentation;
+  if (!presentation?.canToggleDescription || app.descriptionFeedbackLocked) return;
+  const targetDescription = presentation.dislikeDescription || presentation.descriptions?.novice;
+  if (!targetDescription) return;
+  setFeedbackButtonState("dislike", presentation);
+  lockDescriptionFeedback();
+  setResultDescription(targetDescription, true);
+  dismissDescriptionFeedback();
+});
 answerModeButtons.forEach((button) => {
   button.addEventListener("click", () => {
     app.answers.answerMode = button.dataset.answerMode;
     renderQuestion();
   });
-});
-window.addEventListener?.("resize", () => {
-  if (screens.result.classList.contains("is-active")) {
-    fitSingleLineText(document.getElementById("resultSlogan"));
-  }
 });

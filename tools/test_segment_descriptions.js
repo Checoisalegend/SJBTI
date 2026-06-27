@@ -31,6 +31,7 @@ const context = {
 vm.createContext(context);
 vm.runInContext(
   `${fs.readFileSync("data.js", "utf8")}
+${fs.readFileSync("copy.js", "utf8")}
 ${fs.readFileSync("app.js", "utf8")}
 globalThis.inspectDescriptions = () => {
   const standard = { type: "normal", introState: { segment: "fan" }, final: { label: "隐身者", player: "梅西" }, axes: [] };
@@ -41,7 +42,8 @@ globalThis.inspectDescriptions = () => {
   return {
     fan: getResultPresentation(standard).description,
     novice: getResultPresentation(novice).description,
-    hidden: getResultPresentation(hidden).description,
+    hidden: getResultPresentation(hidden),
+    hiddenSource: SJBTI_COPY.specialResults["乐子人"].description,
     messiJames: getResultPresentation(messiJames),
     ronaldoJames: getResultPresentation(ronaldoJames),
   };
@@ -55,8 +57,11 @@ if (result.fan === result.novice) {
   throw new Error("Standard result descriptions should differ between fan and novice segments.");
 }
 
-if (!result.hidden.includes("戏剧性")) {
-  throw new Error(`Hidden result description should keep its original copy: ${result.hidden}`);
+if (
+  result.hidden.description !== result.hiddenSource ||
+  result.hidden.canToggleDescription
+) {
+  throw new Error(`Hidden result description should keep its original copy without feedback: ${result.hidden.description}`);
 }
 
 if (
@@ -64,6 +69,16 @@ if (
   result.messiJames.description === result.ronaldoJames.description
 ) {
   throw new Error("Messi James and Ronaldo James should use separate copy.");
+}
+
+if (
+  !result.messiJames.canToggleDescription ||
+  result.messiJames.feedbackLabels.likeDefault !== "这是高论" ||
+  result.messiJames.feedbackLabels.dislikeDefault !== "这里没有尊重" ||
+  !result.messiJames.dislikeDescription ||
+  result.messiJames.description === result.messiJames.dislikeDescription
+) {
+  throw new Error("Extreme result feedback copy should use its dedicated labels and two descriptions.");
 }
 
 console.log("Segment-specific descriptions and James variants are wired correctly.");

@@ -343,79 +343,38 @@ p {
 }
 
 .result-card {
-  --player-color: var(--green);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  display: grid;
+  place-items: center;
   border-bottom: 1px solid var(--line);
-  padding: clamp(8px, 2vw, 18px) 12px clamp(22px, 3vw, 30px);
-  text-align: center;
+  padding: 0 0 6px;
 }
 
-.result-card h1 {
-  max-width: 760px;
-  color: #101814;
-  font-size: clamp(54px, 7vw, 82px);
-  font-weight: 860;
-  line-height: 1;
-  letter-spacing: 0;
-  overflow-wrap: anywhere;
-}
-
-.result-player-code {
-  margin-top: 8px;
-  color: var(--player-color);
-  font-size: clamp(46px, 5.7vw, 68px);
-  font-weight: 850;
-  line-height: 1;
-}
-
-.result-player-code[hidden],
-#resultPlayerRow[hidden] {
-  display: none;
-}
-
-.result-portrait {
-  width: clamp(250px, 34vw, 320px);
-  margin-top: 18px;
-}
-
-.image-placeholder {
+.card-placeholder {
   position: relative;
-  width: 100%;
+  width: min(430px, 100%);
   aspect-ratio: 3 / 4;
   overflow: hidden;
-  border: 0;
-  border-radius: 4px;
-  background: #f0f2ee;
+  border-radius: 8px;
+  background: #f5f7f4;
 }
 
-.image-placeholder img {
-  position: absolute;
-  inset: 0;
+.card-placeholder img {
   display: none;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.image-placeholder.has-image img {
+.card-placeholder.has-image img {
   display: block;
 }
 
-.result-slogan {
-  width: 100%;
-  max-width: 780px;
-  margin-top: 18px;
-  color: #52625a;
-  font-size: 22px;
-  font-weight: 700;
-  line-height: 1.35;
-  white-space: nowrap;
+#resultPlayerRow[hidden] {
+  display: none;
 }
 
 .result-explanation {
-  padding: clamp(22px, 3vw, 30px) 4px 0;
+  padding: 10px 4px 0;
 }
 
 .result-facts {
@@ -440,6 +399,125 @@ p {
   color: var(--muted);
   font-size: 15px;
   line-height: 1.8;
+  transition:
+    opacity 180ms ease,
+    transform 180ms ease,
+    color 180ms ease;
+}
+
+.result-description.is-changing {
+  opacity: 0.28;
+  transform: translateY(5px);
+}
+
+.result-description.is-updated {
+  color: var(--ink);
+}
+
+.description-feedback {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  max-width: 800px;
+  margin-top: 12px;
+  transition:
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.description-feedback[hidden] {
+  display: none;
+}
+
+.description-feedback.is-dismissing {
+  opacity: 0;
+  transform: translateY(-6px);
+  pointer-events: none;
+}
+
+.feedback-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 1px 14px 1px 1px;
+  background: #f8fbf7;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 820;
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.feedback-icon {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  border-radius: 50%;
+  background: #e6f0e9;
+  color: var(--green);
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.feedback-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.feedback-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(7, 84, 61, 0.36);
+  box-shadow: 0 10px 22px rgba(18, 41, 30, 0.08);
+}
+
+.feedback-btn.is-selected {
+  border-color: rgba(7, 84, 61, 0.7);
+  background: #eaf4eb;
+  color: var(--green);
+  box-shadow: inset 0 0 0 1px rgba(7, 84, 61, 0.16);
+}
+
+.feedback-btn.is-selected .feedback-icon {
+  background: var(--green);
+  color: #fff;
+  transform: scale(1.04);
+}
+
+.feedback-btn.is-negative.is-selected {
+  border-color: rgba(110, 128, 119, 0.48);
+  background: #f2f5f2;
+  color: #4f6258;
+}
+
+.feedback-btn.is-negative.is-selected .feedback-icon {
+  background: #4f6258;
+  color: #fff;
+}
+
+.feedback-btn:disabled {
+  cursor: default;
+}
+
+.feedback-btn:disabled:hover {
+  transform: none;
 }
 
 .dimension-results {
@@ -666,31 +744,15 @@ p {
   }
 
   .result-card {
-    padding: 4px 4px 22px;
+    padding-bottom: 6px;
   }
 
-  .result-card h1 {
-    font-size: clamp(50px, 14vw, 60px);
-  }
-
-  .result-player-code {
-    margin-top: 6px;
-    font-size: clamp(44px, 12vw, 52px);
-  }
-
-  .result-portrait {
-    width: min(300px, 75vw);
-    margin-top: 15px;
-  }
-
-  .result-slogan {
-    max-width: 100%;
-    margin-top: 16px;
-    font-size: 20px;
+  .card-placeholder {
+    width: min(100%, 390px);
   }
 
   .result-explanation {
-    padding: 20px 2px 0;
+    padding: 10px 2px 0;
   }
 
   .result-facts p {
