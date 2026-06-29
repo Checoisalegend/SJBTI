@@ -1,4 +1,4 @@
-tmp/
+﻿tmp/
 dist/
 reference/
 review-assets/
@@ -11,3 +11,4 @@ tools/optimize_personality_images.py
 tools/update_descriptions_from_docx.py
 tools/__pycache__/
 *.pyc
+SJBTI-video-end-card.png

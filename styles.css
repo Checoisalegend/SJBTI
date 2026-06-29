@@ -121,31 +121,86 @@ p {
 }
 
 .intro-minimal {
+  position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  gap: 34px;
   justify-content: center;
-  padding: 40px 20px 72px;
+  align-items: center;
+  padding: 22px 20px 48px;
   text-align: center;
 }
 
+.intro-brand {
+  position: absolute;
+  top: 18px;
+  left: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  color: var(--ink);
+  line-height: 1;
+}
+
+.intro-brand-mark {
+  font-size: 18px;
+  font-weight: 900;
+}
+
+.intro-brand-name {
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 750;
+}
+
+.intro-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
 .intro-minimal h1 {
-  max-width: 1080px;
-  font-size: clamp(42px, 6vw, 76px);
-  font-weight: 820;
-  line-height: 1.1;
-  letter-spacing: 0;
+  max-width: 780px;
+  font-size: clamp(36px, 5vw, 58px);
+  font-weight: 880;
+  line-height: 1.16;
+  letter-spacing: 0.03em;
   text-wrap: balance;
 }
 
-.intro-minimal h1 span {
-  white-space: nowrap;
+.intro-subtitle {
+  color: var(--green);
+  font-size: clamp(19px, 2.4vw, 28px);
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .intro-start-btn {
   min-width: 166px;
   min-height: 52px;
-  margin-top: 40px;
+}
+
+.intro-footer {
+  position: absolute;
+  right: 0;
+  bottom: -2px;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: 750;
+  line-height: 1;
+}
+
+.intro-footer-divider {
+  width: 1px;
+  height: 14px;
+  background: var(--line);
 }
 
 .test-card {
@@ -664,16 +719,45 @@ p {
   }
 
   .intro-minimal {
-    padding: 28px 10px 56px;
+    gap: 32px;
+    padding: 34px 10px 48px;
+  }
+
+  .intro-brand {
+    top: 10px;
+    gap: 8px;
+  }
+
+  .intro-brand-mark {
+    font-size: 15px;
+  }
+
+  .intro-brand-name {
+    font-size: 12px;
+  }
+
+  .intro-copy {
+    gap: 14px;
   }
 
   .intro-minimal h1 {
-    font-size: clamp(38px, 11vw, 50px);
+    max-width: 340px;
+    font-size: clamp(31px, 9.2vw, 41px);
+    line-height: 1.18;
+    letter-spacing: 0.02em;
+  }
+
+  .intro-subtitle {
+    font-size: 18px;
   }
 
   .intro-start-btn {
     min-width: 150px;
-    margin-top: 34px;
+  }
+
+  .intro-footer {
+    bottom: -10px;
+    font-size: 15px;
   }
 
   .test-card {

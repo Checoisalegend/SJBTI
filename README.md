@@ -1,20 +1,26 @@
-# SJBTI 世界杯人格测试
+﻿# SJBTI 世界杯人格测试
 
 这是一个纯前端静态网站，用 HTML、CSS 和 JavaScript 实现，不需要数据库或后端服务。
 
 ## 本地预览
 
-直接打开 `index.html` 即可运行。如果浏览器缓存旧资源，刷新页面或给资源版本号加一位即可。
+直接打开 `index.html` 即可运行。若浏览器缓存旧资源，刷新页面，或更新 `index.html` 中资源链接后的版本号。
 
 ## 结果卡替换
 
-网站结果页直接加载 `assets/result-cards/` 里的 WebP 文件。替换签名版图片时，只需要保持文件名完全一致，例如 `独裁者.webp`、`詹姆斯梅.webp`、`跳水罗.webp`。
+网站结果页直接加载 `assets/result-cards/` 里的 WebP 文件。
 
-替换结果卡后，建议把 `app.js` 顶部的 `RESULT_ASSET_VERSION` 改成一个新的值，用来绕过 Cloudflare 和浏览器的旧图片缓存。
+替换签名版图片时，只需要保持文件名完全一致，例如：
+
+- `独裁者.webp`
+- `詹姆斯梅.webp`
+- `跳水罗.webp`
+
+`assets/result-cards/` 中应有 39 张 WebP 结果卡。替换后建议把 `app.js` 顶部的 `RESULT_ASSET_VERSION` 改成新的值，用来绕过 Cloudflare 和浏览器的旧图片缓存。
 
 ## 文案修改
 
-常改的展示文案都集中在 `copy.js`：
+常改的展示文案集中在 `copy.js`：
 
 - `standardResults`：24 个标准人格。
 - `standardResults[人格名].slogan`：结果卡片上的一句 slogan。
@@ -23,7 +29,7 @@
 - `specialResults`：梅罗极端隐藏款和其他隐藏人格，不分萌新/懂球组。
 - `players`：球员简称、中文名和国家队主色。
 
-如果改了 slogan 或球员简称，需要同步替换 `assets/result-cards/` 里的对应结果卡图片，因为结果页展示的是已经排版好的整张结果卡。
+注意：如果改了 slogan 或球员简称，需要同步替换 `assets/result-cards/` 里的对应结果卡图片，因为结果页展示的是已经排版好的整张结果卡。
 
 ## 项目结构
 
@@ -48,7 +54,7 @@ foreach ($test in $tests) {
 node tools/build-release.js
 ```
 
-生成完成后，只部署 `dist` 目录。
+生成完成后，Cloudflare Pages 使用 `dist` 目录作为上线包。
 
 ## Cloudflare Pages
 
